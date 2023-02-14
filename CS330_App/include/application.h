@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 #include <shader.h>
 #include <camera.h>
-
 #include <mesh.h>
 
 class Application {
@@ -43,6 +42,10 @@ private:
     glm::vec2 _cameraLookSpeed {};
 
     float _lastFrameTime { -1.f };
+
+    // lighting
+    float _ambientStrength { 0.1f };
+    glm::vec3 _ambientLightColor {1.f, 1.f, 1.f};
 
     GLuint _containerTexture;
 };

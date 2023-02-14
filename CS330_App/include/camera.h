@@ -21,6 +21,7 @@ public:
 
     glm::mat4 GetViewMatrix();
     glm::mat4 GetProjectionMatrix();
+    glm::vec3 GetPosition() const { return _position; }
 
     bool IsPerspective () const { return _isPerspective; }
     void SetIsPerspective(bool isPerspective) { _isPerspective = isPerspective; }

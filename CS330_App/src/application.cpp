@@ -1,10 +1,13 @@
 #include <application.h>
 #include <iostream>
 #include <types.h>
+#include <shapes.h>
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <stb_image.h>
+#include "pyramid.h"
+#include "point_light.h"
 
 Application::Application(std::string WindowTitle, int width, int height)
     : _applicationName{ WindowTitle }, _width{ width }, _height{ height },
@@ -87,7 +90,13 @@ bool Application::openWindow() {
         return false;
     }
 
+    // enable depth dest
     glEnable(GL_DEPTH_TEST);
+
+    // cull back faces to ensure correct vertices ordering
+//    glFrontFace(GL_CCW);
+//    glCullFace(GL_BACK);
+//    glEnable(GL_CULL_FACE);
 
     // otherwise, return true
     return true;
@@ -167,13 +176,41 @@ void Application::setupInputs() {
 }
 
 void Application::setupScene() {
-    // creating different meshes for each shape and manipulating the position
-    auto& pyramid = _meshes.emplace_back(Shapes::pyramidVertices, Shapes::pyramidElements);
-    pyramid.Transform = glm::translate(pyramid.Transform, glm::vec3(1.f, -0.5f, 0.0f));
+    _objects.push_back(std::make_unique<Pyramid>());
+
+    auto &light = _objects.emplace_back(std::make_unique<PointLight>());
+    light->Transform = glm::translate(light->Transform, glm::vec3(-2.5f, 7.f, -5.f));
+
+    auto* castLight = reinterpret_cast<PointLight*>(light.get());
+    castLight->AmbientColor = {0.1f, 0.2f, 0.05f}
+    castLight->DiffuseColor = {0.9f, 1.f, 0.7f}
+    castLight->SpecularColor = {0.9f, 1.f, 0.7f}
+
+    castLight->Constant = 1.f;
+    castLight->Linear = 0.35f;
+    castLight->Quadratic = 0.44f;
+
+    auto &light2 = _objects.emplace_back(std::make_unique<PointLight>());
+    light2->Transform = glm::translate(light2->Transform, glm::vec3(-1.5f, 0.f, -2.5f));
+
+    auto* castLight2 = reinterpret_cast<PointLight*>(light2.get());
+    castLight2->AmbientColor = {0.0f, 0.0f, 0.0f}
+    castLight2->DiffuseColor = {1.0f, 1.f, 0.0f}
+    castLight2->SpecularColor = {1.0f, 1.f, 0.0f}
+
+    castLight2->Constant = 1.f;
+    castLight2->Linear = 0.35f;
+    castLight2->Quadratic = 0.44f;
+
+
+
+
+
 
     // declaring paths to shaderfiles
     Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
-    _shader = Shader( shaderPath / "basic_shader.vert" , shaderPath / "basic_shader.frag");
+    _shader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
+//    _basicLitShader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
 
     // defining path to texture file
     Path texturePath = std::filesystem::current_path() / "assets" / "textures";
@@ -215,6 +252,26 @@ bool Application::draw() {
     // set model view projection matrix
     glm::mat4 view = _camera.GetViewMatrix();
     glm::mat4 projection = _camera.GetProjectionMatrix();
+
+    SceneParameters sceneParams {
+        .ProjectionMatrix = projection,
+        .ViewMatrix = view,
+        .CameraPosition = _camera.GetPosition(),
+        .DirLight = {
+            .Direction = glm::normalize(glm::vec3{-0.2f, -0.5f, -1.f}),
+            .AmbientColor = {0.1f, 0.2f, 0.05f},
+            .DiffuseColor = {0.9f, 1.f, 0.7f},
+            .SpecularColor = {0.9f, 1.f, 0.7f}
+        }
+    };
+
+    for (auto& model : _objects) {
+        model->ProcessLighting(sceneParams);
+    }
+
+    for (auto& model : _objects) {
+        model->Draw(sceneParams);
+    }
 
     // set matrices in the shader
     _shader.Bind();

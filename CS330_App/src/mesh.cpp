@@ -1,7 +1,38 @@
 #include <mesh.h>
 #include <iostream>
+#include "shapes.h"
 
 Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<uint32_t>& elements) {
+    init(vertices, elements);
+}
+
+
+Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &elements, const glm::vec3 &color) {
+    for (auto& vertex : vertices) {
+        vertex.Color = color;
+    }
+
+    init(vertices, elements);
+}
+
+void Mesh::Draw() const {
+    // Bind vertex array
+    glBindVertexArray(_vertexArrayObject);
+
+    // gl draw calls
+    glDrawElements(GL_TRIANGLES, _elementCount, GL_UNSIGNED_INT, nullptr);
+}
+
+void Mesh::init(std::vector<Vertex>& vertices, std::vector<uint32_t>& elements) {
+    for (auto i = 0; i < elements.size(); i += 3) {
+        // calculate normals
+        auto p1Index = elements[i];
+        auto p2Index = elements[i + 1];
+        auto p3Index = elements[i + 2];
+
+        Shapes::UpdateNormals(vertices[p1Index], vertices[p2Index], vertices[p3Index]);
+    }
+
     // create the triangle
     glGenVertexArrays(1, &_vertexArrayObject);
     glGenBuffers(1, &_vertexBufferObject);
@@ -29,13 +60,4 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<uint32_t>& elements) {
     glEnableVertexAttribArray(3);
 
     _elementCount = elements.size();
-}
-
-void Mesh::Draw() {
-
-    // Bind vertex array
-    glBindVertexArray(_vertexArrayObject);
-
-    // gl draw calls
-    glDrawElements(GL_TRIANGLES, _elementCount, GL_UNSIGNED_INT, nullptr);
 }

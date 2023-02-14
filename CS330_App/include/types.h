@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <vector>
 
+constexpr uint8_t MAX_POINT_LIGHTS = 4;
 
 struct Vertex {
     glm::vec3 Position {0.f, 0.f, 0.f};
@@ -9,78 +11,33 @@ struct Vertex {
     glm::vec2 Uv {1.f, 1.f};
 };
 
+struct DirectionalLight {
+    glm::vec3 Direction;
 
-struct Shapes {
-    static inline std::vector<Vertex> pyramidVertices {
-            // front
-            // 0
-            {
-                    .Position = {-0.5f, -0.5f, -0.5f},
-                    .Color = {1.f, 0.5f, 0.5f},
-                    .Uv = {0.f, 0.f}
-            },
-            // 1
-            {
-                    .Position = {0.5f, -0.5f, -0.5f},
-                    .Color = {0.5f, 1.f, 0.5f},
-                    .Uv = {1.f, 0.f}
-            },
-            // top point
-            // 2
-            {
-                    .Position = {0.0f, 0.5f, 0.0f},
-                    .Color = {0.5f, 0.5f, 1.f},
-                    .Uv = {0.5f, 1.f}
-            },
-            // right
-            // 3
-            {
-                    .Position = {0.5f, -0.5f, 0.5f},
-                    .Color = {0.5f, 0.5f, 0.5f},
-                    .Uv = {0.f, 0.f}
-            },
-            // 4
-            {
-                    .Position = {-0.5f, -0.5f, 0.5f},
-                    .Color = {0.5f, 0.5f, 0.5f},
-                    .Uv = {1.f, 0.f}
-            },
+    glm::vec3 AmbientColor {};
+    glm::vec3 DiffuseColor {};
+    glm::vec3 SpecularColor {};
+};
 
-            // base
-            // 5 = 0
-            {
-                    .Position = {-0.5f, -0.5f, -0.5f},
-                    .Color = {1.f, 0.5f, 0.5f},
-                    .Uv = {0.f, 0.f}
-            },
-            // 6 = 1
-            {
-                    .Position = {0.5f, -0.5f, -0.5f},
-                    .Color = {0.5f, 1.f, 0.5f},
-                    .Uv = {1.f, 0.f}
-            },
-            // 7 = 2
-            {
-                    .Position = {0.5f, -0.5f, 0.5f},
-                    .Color = {0.5f, 0.5f, 1.f},
-                    .Uv = {1.f, 1.f}
-            },
-            // 8 = 3
-            {
-                    .Position = {-0.5f, -0.5f, 0.5f},
-                    .Color = {0.5f, 0.5f, 0.5f},
-                    .Uv = {0.f, 1.f}
-            },
-    };
+struct PointLightStruct {
+    glm::vec3 Position;
 
-    static inline std::vector<uint32_t> pyramidElements {
-            // sides
-            0, 1, 2,
-            1, 3, 2,
-            3, 4, 2,
-            4, 0, 2,
-            // base
-            5, 6, 7,
-            7, 8, 5
-    };
+    glm::vec3 AmbientColor {};
+    glm::vec3 DiffuseColor {};
+    glm::vec3 SpecularColor {};
+
+    float Constant { 1.f };
+    float Linear { 0.f };
+    float Quadratic { 0.f };
+};
+
+struct SceneParameters {
+    glm::mat4 ProjectionMatrix { 1.f };
+    glm::mat4 ViewMatrix { 1.f };
+
+    glm::vec3 CameraPosition {};
+
+    DirectionalLight DirLight {};
+
+    std::vector<PointLightStruct> Lights {};
 };

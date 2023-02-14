@@ -33,7 +33,7 @@ Shader::Shader(const Path& vertexPath, const Path& fragmentPath) {
     }
 }
 
-void Shader::Bind() {
+void Shader::Bind() const {
     // Use our triangle shader
     glUseProgram(_shaderProgram);
 }
@@ -82,11 +82,15 @@ void Shader::load(const std::string &vertexSource, const std::string &fragmentSo
     glDeleteShader(fragmentShader);
 }
 
-GLint Shader::getUniformLocation(const std::string &uniformName) {
-    return glGetUniformLocation(_shaderProgram, uniformName.c_str());
+void Shader::SetVec3(const std::string &uniformName, const glm::vec3 &vec3) const {
+    auto uniformLoc = getUniformLocation(uniformName);
+
+    if (uniformLoc != -1) {
+        glUniform3fv(uniformLoc, 1, glm::value_ptr(vec3));
+    }
 }
 
-void Shader::SetMat4(const std::string& uniformName, const glm::mat4 &mat4) {
+void Shader::SetMat4(const std::string& uniformName, const glm::mat4 &mat4) const {
     auto uniformLoc = getUniformLocation(uniformName);
 
     if (uniformLoc != -1) {
@@ -94,3 +98,26 @@ void Shader::SetMat4(const std::string& uniformName, const glm::mat4 &mat4) {
         glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat4));
     }
 }
+
+void Shader::SetInt(const std::string &uniformName, int value) const {
+    auto uniformLoc = getUniformLocation(uniformName);
+
+    if (uniformLoc != -1) {
+        glUniform1i(uniformLoc, value);
+    }
+}
+
+void Shader::SetFloat(const std::string &uniformName, float value) const {
+    auto uniformLoc = getUniformLocation(uniformName);
+
+    if (uniformLoc != -1) {
+        glUniform1f(uniformLoc, value);
+    }
+}
+
+GLint Shader::getUniformLocation(const std::string &uniformName) const {
+    return glGetUniformLocation(_shaderProgram, uniformName.c_str());
+}
+
+
+
