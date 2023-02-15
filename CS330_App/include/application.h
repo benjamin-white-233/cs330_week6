@@ -6,6 +6,7 @@
 #include <shader.h>
 #include <camera.h>
 #include <mesh.h>
+#include <game_object.h>
 
 class Application {
 public:
@@ -33,8 +34,8 @@ private:
 
     float _moveSpeed { 5.f };
     Camera _camera;
-    std::vector<Mesh> _meshes;
-    Shader _shader;
+    std::vector<std::unique_ptr<GameObject>> _objects {};
+
     bool _running { false };
 
     bool _firstMouse { false };

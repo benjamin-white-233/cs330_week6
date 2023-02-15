@@ -7,7 +7,9 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 #include "pyramid.h"
-#include "point_light.h"
+#include <point_light.h>
+#include <model.h>
+#include <game_object.h>
 
 Application::Application(std::string WindowTitle, int width, int height)
     : _applicationName{ WindowTitle }, _width{ width }, _height{ height },
@@ -178,13 +180,15 @@ void Application::setupInputs() {
 void Application::setupScene() {
     _objects.push_back(std::make_unique<Pyramid>());
 
+//    std::cout << "hello" << std::endl;
+
     auto &light = _objects.emplace_back(std::make_unique<PointLight>());
     light->Transform = glm::translate(light->Transform, glm::vec3(-2.5f, 7.f, -5.f));
 
     auto* castLight = reinterpret_cast<PointLight*>(light.get());
-    castLight->AmbientColor = {0.1f, 0.2f, 0.05f}
-    castLight->DiffuseColor = {0.9f, 1.f, 0.7f}
-    castLight->SpecularColor = {0.9f, 1.f, 0.7f}
+    castLight->AmbientColor = {0.1f, 0.2f, 0.05f};
+    castLight->DiffuseColor = {0.9f, 1.f, 0.7f};
+    castLight->SpecularColor = {0.9f, 1.f, 0.7f};
 
     castLight->Constant = 1.f;
     castLight->Linear = 0.35f;
@@ -194,45 +198,41 @@ void Application::setupScene() {
     light2->Transform = glm::translate(light2->Transform, glm::vec3(-1.5f, 0.f, -2.5f));
 
     auto* castLight2 = reinterpret_cast<PointLight*>(light2.get());
-    castLight2->AmbientColor = {0.0f, 0.0f, 0.0f}
-    castLight2->DiffuseColor = {1.0f, 1.f, 0.0f}
-    castLight2->SpecularColor = {1.0f, 1.f, 0.0f}
+    castLight2->AmbientColor = {0.0f, 0.0f, 0.0f};
+    castLight2->DiffuseColor = {1.0f, 1.f, 0.0f};
+    castLight2->SpecularColor = {1.0f, 1.f, 0.0f};
 
     castLight2->Constant = 1.f;
     castLight2->Linear = 0.35f;
     castLight2->Quadratic = 0.44f;
 
 
-
-
-
-
-    // declaring paths to shaderfiles
-    Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
-    _shader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
+//    // declaring paths to shaderfiles
+//    Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
+//    _shader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
 //    _basicLitShader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
-
-    // defining path to texture file
-    Path texturePath = std::filesystem::current_path() / "assets" / "textures";
-    auto containerPath = (texturePath / "container.jpg").string();
-
-    int width, height, numChannels;
-    // loading texture
-    unsigned char* data = stbi_load(containerPath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
-
-    // generating and binding texture
-    glGenTextures(1, &_containerTexture);
-    glBindTexture(GL_TEXTURE_2D, _containerTexture);
-
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,  GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else {
-        std::cerr << "Failed to load texture at path: " << containerPath << std::endl;
-    }
-    // delete data origin
-    stbi_image_free(data);
+//
+//    // defining path to texture file
+//    Path texturePath = std::filesystem::current_path() / "assets" / "textures";
+//    auto containerPath = (texturePath / "container.jpg").string();
+//
+//    int width, height, numChannels;
+//    // loading texture
+//    unsigned char* data = stbi_load(containerPath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
+//
+//    // generating and binding texture
+//    glGenTextures(1, &_containerTexture);
+//    glBindTexture(GL_TEXTURE_2D, _containerTexture);
+//
+//    if (data) {
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,  GL_UNSIGNED_BYTE, data);
+//        glGenerateMipmap(GL_TEXTURE_2D);
+//    }
+//    else {
+//        std::cerr << "Failed to load texture at path: " << containerPath << std::endl;
+//    }
+//    // delete data origin
+//    stbi_image_free(data);
 }
 
 bool Application::update(float deltaTime) {
@@ -244,6 +244,7 @@ bool Application::update(float deltaTime) {
 }
 
 bool Application::draw() {
+
     // background color
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -272,20 +273,20 @@ bool Application::draw() {
     for (auto& model : _objects) {
         model->Draw(sceneParams);
     }
-
-    // set matrices in the shader
-    _shader.Bind();
-    _shader.SetMat4("projection", projection);
-    _shader.SetMat4("view", view);
-
-    glBindTexture(GL_TEXTURE_2D, _containerTexture);
-
-    // draw each mesh
-    for (auto& mesh : _meshes) {
-        // sending each individual mesh.Transform to the shader
-        _shader.SetMat4("model", mesh.Transform);
-        mesh.Draw();
-    }
+//
+//    // set matrices in the shader
+//    _shader.Bind();
+//    _shader.SetMat4("projection", projection);
+//    _shader.SetMat4("view", view);
+//
+//    glBindTexture(GL_TEXTURE_2D, _containerTexture);
+//
+//    // draw each mesh
+//    for (auto& mesh : _meshes) {
+//        // sending each individual mesh.Transform to the shader
+//        _shader.SetMat4("model", mesh.Transform);
+//        mesh.Draw();
+//    }
 
     glfwSwapBuffers(_window);
     return false;

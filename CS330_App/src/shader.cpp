@@ -119,5 +119,7 @@ GLint Shader::getUniformLocation(const std::string &uniformName) const {
     return glGetUniformLocation(_shaderProgram, uniformName.c_str());
 }
 
-
+void Shader::AddTexture(const std::shared_ptr<Texture> &texture) {
+    _textures.emplace_back(texture);
+}
 

@@ -9,7 +9,7 @@ find_package(OpenGL REQUIRED)
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE GLAD_SOURCES external/GLAD/glad/*.c)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLAD_SOURCES} src/camera.cpp include/camera.h src/point_light.cpp include/point_light.h include/shapes.h include/game_object.h src/pyramid.cpp include/pyramid.h)
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLAD_SOURCES} src/camera.cpp include/camera.h src/point_light.cpp include/point_light.h include/shapes.h include/game_object.h src/pyramid.cpp include/pyramid.h include/model.h include/material.h src/model.cpp)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE

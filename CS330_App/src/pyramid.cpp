@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <shapes.h>
 #include <string>
+#include <model.h>
 
 Pyramid::Pyramid() {
     createShaders();
@@ -22,7 +23,7 @@ void Pyramid::Update(float deltaTime) {
 }
 
 void Pyramid::Draw(const SceneParameters& sceneParams) {
-    Shader* lastBoundshader = nullptr;
+    Shader* lastBoundShader = nullptr;
     for (auto& model : _models) {
         auto* shader = model.GetShader();
         auto* mesh = model.GetMesh();
@@ -66,10 +67,11 @@ void Pyramid::ProcessLighting(SceneParameters &sceneParams) {
 }
 
 void Pyramid::createShaders() {
-    _basicLitShader = std::make_shared<Shader>(Path("basic_lit.vert"), Path("basic_lit.frag"));
-    auto pyramidTexture = std::make_shared<Texture>("container.jpg");
-
+    auto texturePath = std::filesystem::current_path() / "assets" / "textures";
+    auto pyramidTexture = std::make_shared<Texture>(texturePath / "container.jpg");
     _basicLitShader->AddTexture(pyramidTexture);
+
+    _basicLitShader = std::make_shared<Shader>(Path("basic_lit.vert"), Path("basic_lit.frag"));
 }
 
 void Pyramid::createPyramid() {
@@ -78,5 +80,5 @@ void Pyramid::createPyramid() {
 
     _models.emplace_back(pyramidMesh, _basicLitShader);
 
-    pyramidMesh->Transform = glm::translate(pyramid.Transform, glm::vec3(1.f, -0.5f, 0.0f));
+    pyramidMesh->Transform = glm::translate(pyramidMesh->Transform, glm::vec3(1.f, -0.5f, 0.0f));
 }

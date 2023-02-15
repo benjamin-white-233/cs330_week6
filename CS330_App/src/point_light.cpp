@@ -5,6 +5,9 @@
 #include <point_light.h>
 #include <shapes.h>
 #include <glm/ext/matrix_transform.hpp>
+#include <model.h>
+#include <shader.h>
+#include <mesh.h>
 
 PointLight::PointLight() {
     createShader();
@@ -57,7 +60,8 @@ void PointLight::createShader() {
 }
 
 void PointLight::createMesh() {
-    auto& pyramid = _meshes.emplace_back(Shapes::pyramidVertices, Shapes::pyramidElements);
+    auto pyramid = std::make_shared<Mesh>(Shapes::pyramidVertices, Shapes::pyramidElements);
+    auto& pyramidModel = _models.emplace_back(pyramid, _basicUnlitShader);
 }
 
 

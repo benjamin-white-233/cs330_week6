@@ -10,6 +10,7 @@
 
 class Pyramid : public GameObject {
 public:
+    Pyramid();
     void Init() override;
     void Draw(const SceneParameters &sceneParams) override;
     void Update(float deltaTime) override;

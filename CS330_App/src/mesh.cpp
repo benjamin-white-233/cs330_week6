@@ -6,7 +6,6 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<uint32_t>& elements) {
     init(vertices, elements);
 }
 
-
 Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &elements, const glm::vec3 &color) {
     for (auto& vertex : vertices) {
         vertex.Color = color;
@@ -20,7 +19,7 @@ void Mesh::Draw() const {
     glBindVertexArray(_vertexArrayObject);
 
     // gl draw calls
-    glDrawElements(GL_TRIANGLES, _elementCount, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, static_cast<int>(_elementCount), GL_UNSIGNED_INT, nullptr);
 }
 
 void Mesh::init(std::vector<Vertex>& vertices, std::vector<uint32_t>& elements) {

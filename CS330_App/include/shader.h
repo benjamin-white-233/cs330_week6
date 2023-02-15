@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <texture.h>
+#include <vector>
 
 using Path = std::filesystem::path;
 
@@ -29,4 +30,5 @@ private:
 
 private:
     GLuint _shaderProgram;
+    std::vector<std::shared_ptr<Texture>> _textures {};
 };
