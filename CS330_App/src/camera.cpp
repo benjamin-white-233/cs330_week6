@@ -8,14 +8,14 @@
 
 Camera::Camera(int width, int height, glm::vec3 initialPosition, bool isPerspective)
     : _isPerspective{isPerspective},
-    _position { initialPosition }, _lookDirection ( -1.f * initialPosition),
-    _width {width}, _height {height} {
+      position {initialPosition }, _lookDirection (-1.f * initialPosition),
+      _width {width}, _height {height} {
 
     recalculateVectors();
 }
 
 glm::mat4 Camera::GetViewMatrix() {
-    return glm::lookAt(_position, _position + _lookDirection, _upDirection);
+    return glm::lookAt(position, position + _lookDirection, _upDirection);
 }
 
 glm::mat4 Camera::GetProjectionMatrix() {
@@ -58,7 +58,7 @@ void Camera::MoveCamera(Camera::MoveDirection direction, float moveAmount) {
             break;
     }
 
-    _position += moveDirection * moveAmount;
+    position += moveDirection * moveAmount;
 }
 
 void Camera::RotateBy(float yaw, float pitch) {

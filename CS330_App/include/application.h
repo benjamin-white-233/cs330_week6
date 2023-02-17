@@ -5,8 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <shader.h>
 #include <camera.h>
+
 #include <mesh.h>
-#include <game_object.h>
+#include <light.h>
 
 class Application {
 public:
@@ -34,7 +35,12 @@ private:
 
     float _moveSpeed { 5.f };
     Camera _camera;
-    std::vector<std::unique_ptr<GameObject>> _objects {};
+
+    std::vector<Mesh> _meshes;
+    std::vector<Light> _lights;
+
+    Shader _lighting_shader;
+    Shader _light_cube_shader;
 
     bool _running { false };
 
@@ -43,10 +49,6 @@ private:
     glm::vec2 _cameraLookSpeed {};
 
     float _lastFrameTime { -1.f };
-
-    // lighting
-    float _ambientStrength { 0.1f };
-    glm::vec3 _ambientLightColor {1.f, 1.f, 1.f};
 
     GLuint _containerTexture;
 };

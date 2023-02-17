@@ -5,14 +5,11 @@ layout (location = 2) in vec3 normal;
 layout (location = 3) in vec2 uv;
 
 out vec4 vertexColor;
-out vec2 texCoord;
 
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat4 model;
 
 void main() {
     gl_Position = projection * view * model * vec4(position, 1);
-    vertexColor = vec4(color, 1.0f);
-    texCoord = uv;
 }

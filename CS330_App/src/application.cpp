@@ -1,15 +1,10 @@
 #include <application.h>
 #include <iostream>
 #include <types.h>
-#include <shapes.h>
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <stb_image.h>
-#include "pyramid.h"
-#include <point_light.h>
-#include <model.h>
-#include <game_object.h>
 
 Application::Application(std::string WindowTitle, int width, int height)
     : _applicationName{ WindowTitle }, _width{ width }, _height{ height },
@@ -46,6 +41,7 @@ void Application::Run() {
         }
         // Update
         update(deltaTime);
+
         // Draw
         draw();
     }
@@ -92,7 +88,6 @@ bool Application::openWindow() {
         return false;
     }
 
-    // enable depth dest
     glEnable(GL_DEPTH_TEST);
 
     // cull back faces to ensure correct vertices ordering
@@ -178,61 +173,51 @@ void Application::setupInputs() {
 }
 
 void Application::setupScene() {
-    _objects.push_back(std::make_unique<Pyramid>());
+//     creating different meshes for each shape and manipulating the position
+    auto& plane = _meshes.emplace_back(Shapes::planeVertices, Shapes::planeElements);
+    plane.Transform = glm::translate(plane.Transform, glm::vec3(0.f, -1.5f, 0.f));
 
-//    std::cout << "hello" << std::endl;
+    auto& pyramid = _meshes.emplace_back(Shapes::pyramidVertices, Shapes::pyramidElements);
+    pyramid.Transform = glm::translate(pyramid.Transform, glm::vec3(1.f, -0.5f, -0.f));
 
-    auto &light = _objects.emplace_back(std::make_unique<PointLight>());
-    light->Transform = glm::translate(light->Transform, glm::vec3(-2.5f, 7.f, -5.f));
+    auto& basicCube = _meshes.emplace_back(Shapes::cubeVertices, Shapes::cubeElements);
+    basicCube.Transform = glm::translate(basicCube.Transform, glm::vec3(2.f, 1.5f, 1.0f));
 
-    auto* castLight = reinterpret_cast<PointLight*>(light.get());
-    castLight->AmbientColor = {0.1f, 0.2f, 0.05f};
-    castLight->DiffuseColor = {0.9f, 1.f, 0.7f};
-    castLight->SpecularColor = {0.9f, 1.f, 0.7f};
+    // light
+    auto& cube = _lights.emplace_back(Shapes::cubeVertices, Shapes::cubeElements);
+    cube.Transform = glm::translate(cube.Transform, glm::vec3(-5.f, 0.f, -5.f));
+    cube.Transform = glm::scale(cube.Transform, glm::vec3(0.2f));
 
-    castLight->Constant = 1.f;
-    castLight->Linear = 0.35f;
-    castLight->Quadratic = 0.44f;
+//    auto& cube2 = _lights.emplace_back(Shapes::cubeVertices, Shapes::cubeElements);
+//    cube2.Transform = glm::translate(cube2.Transform, glm::vec3(5.f, 1.f, 4.f));
+//    cube2.Transform = glm::scale(cube2.Transform, glm::vec3(0.f));
 
-    auto &light2 = _objects.emplace_back(std::make_unique<PointLight>());
-    light2->Transform = glm::translate(light2->Transform, glm::vec3(-1.5f, 0.f, -2.5f));
+    // declaring paths to shaderfiles
+    Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
+    _lighting_shader = Shader(shaderPath / "basic_lighting.vert" , shaderPath / "basic_lighting.frag");
+    _light_cube_shader = Shader(shaderPath / "light_cube.vert" , shaderPath / "light_cube.frag");
 
-    auto* castLight2 = reinterpret_cast<PointLight*>(light2.get());
-    castLight2->AmbientColor = {0.0f, 0.0f, 0.0f};
-    castLight2->DiffuseColor = {1.0f, 1.f, 0.0f};
-    castLight2->SpecularColor = {1.0f, 1.f, 0.0f};
+    // defining path to texture file
+    Path texturePath = std::filesystem::current_path() / "assets" / "textures";
+    auto containerPath = (texturePath / "container.jpg").string();
 
-    castLight2->Constant = 1.f;
-    castLight2->Linear = 0.35f;
-    castLight2->Quadratic = 0.44f;
+    int width, height, numChannels;
+    // loading texture
+    unsigned char* data = stbi_load(containerPath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
 
+    // generating and binding texture
+    glGenTextures(1, &_containerTexture);
+    glBindTexture(GL_TEXTURE_2D, _containerTexture);
 
-//    // declaring paths to shaderfiles
-//    Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
-//    _shader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
-//    _basicLitShader = Shader( shaderPath / "basic_lit.vert" , shaderPath / "basic_lit.frag");
-//
-//    // defining path to texture file
-//    Path texturePath = std::filesystem::current_path() / "assets" / "textures";
-//    auto containerPath = (texturePath / "container.jpg").string();
-//
-//    int width, height, numChannels;
-//    // loading texture
-//    unsigned char* data = stbi_load(containerPath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
-//
-//    // generating and binding texture
-//    glGenTextures(1, &_containerTexture);
-//    glBindTexture(GL_TEXTURE_2D, _containerTexture);
-//
-//    if (data) {
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,  GL_UNSIGNED_BYTE, data);
-//        glGenerateMipmap(GL_TEXTURE_2D);
-//    }
-//    else {
-//        std::cerr << "Failed to load texture at path: " << containerPath << std::endl;
-//    }
-//    // delete data origin
-//    stbi_image_free(data);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,  GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cerr << "Failed to load texture at path: " << containerPath << std::endl;
+    }
+    // delete data origin
+    stbi_image_free(data);
 }
 
 bool Application::update(float deltaTime) {
@@ -244,51 +229,57 @@ bool Application::update(float deltaTime) {
 }
 
 bool Application::draw() {
-
     // background color
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // camera
     // set model view projection matrix
     glm::mat4 view = _camera.GetViewMatrix();
     glm::mat4 projection = _camera.GetProjectionMatrix();
+    // world transformation
+//    glm::mat4 model = glm::mat4(1.0f);
 
-    SceneParameters sceneParams {
-        .ProjectionMatrix = projection,
-        .ViewMatrix = view,
-        .CameraPosition = _camera.GetPosition(),
-        .DirLight = {
-            .Direction = glm::normalize(glm::vec3{-0.2f, -0.5f, -1.f}),
-            .AmbientColor = {0.1f, 0.2f, 0.05f},
-            .DiffuseColor = {0.9f, 1.f, 0.7f},
-            .SpecularColor = {0.9f, 1.f, 0.7f}
+    glBindTexture(GL_TEXTURE_2D, _containerTexture);
+
+    for (auto &light: _lights) {
+//        glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+        // set matrices in the shader
+        _light_cube_shader.Bind();
+        _light_cube_shader.SetMat4("projection", projection);
+        _light_cube_shader.SetMat4("view", view);
+        _light_cube_shader.SetMat4("model", light.Transform);
+
+        _light_cube_shader.SetVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+        _light_cube_shader.SetVec3("lightPos", glm::vec3(light.Transform[3]));
+        _light_cube_shader.SetVec3("viewPos", _camera.position);
+
+        light.Draw();
+    }
+
+    // draw each mesh
+    for (auto& mesh : _meshes) {
+        // set matrices in the shader
+        _lighting_shader.Bind();
+        // light color
+        _lighting_shader.SetVec3("lightColor", glm::vec3(0.7f, 0.2f, 0.5f));
+        // position of light source to object shader
+        for (auto & _light : _lights) {
+            _lighting_shader.SetVec3("lightPos", glm::vec3(_light.Transform[3]));
         }
-    };
+        _lighting_shader.SetVec3("viewPos", _camera.position);
 
-    for (auto& model : _objects) {
-        model->ProcessLighting(sceneParams);
+        _lighting_shader.SetMat4("projection", projection);
+        _lighting_shader.SetMat4("view", view);
+//        _lighting_shader.SetMat4("model", model);
+        _lighting_shader.SetMat4("model", mesh.Transform);
+
+        mesh.Draw();
     }
 
-    for (auto& model : _objects) {
-        model->Draw(sceneParams);
-    }
-//
-//    // set matrices in the shader
-//    _shader.Bind();
-//    _shader.SetMat4("projection", projection);
-//    _shader.SetMat4("view", view);
-//
-//    glBindTexture(GL_TEXTURE_2D, _containerTexture);
-//
-//    // draw each mesh
-//    for (auto& mesh : _meshes) {
-//        // sending each individual mesh.Transform to the shader
-//        _shader.SetMat4("model", mesh.Transform);
-//        mesh.Draw();
-//    }
 
-    glfwSwapBuffers(_window);
+glfwSwapBuffers(_window);
     return false;
 }
 

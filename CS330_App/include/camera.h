@@ -21,7 +21,6 @@ public:
 
     glm::mat4 GetViewMatrix();
     glm::mat4 GetProjectionMatrix();
-    glm::vec3 GetPosition() const { return _position; }
 
     bool IsPerspective () const { return _isPerspective; }
     void SetIsPerspective(bool isPerspective) { _isPerspective = isPerspective; }
@@ -34,12 +33,13 @@ public:
     void RotateBy(float yaw, float roll);
     void IncrementZoom(float amount);
 
+    glm::vec3 position {};
+
 private:
     void recalculateVectors();
 private:
     bool _isPerspective { true };
 
-    glm::vec3 _position {};
     glm::vec3 _lookDirection {};
     glm::vec3 _upDirection { 0.f, 1.f, 0.f };
     glm::vec3 _rightDirection {};
